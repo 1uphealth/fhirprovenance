@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en" ng-app>
+  <head>
+    <title>1UPHealth Provenance Test Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/node-forge@0.7.0/dist/forge.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+
+    <!--<script src="/js/angular.min.js"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-debug.js"></script>-->
+
+    <style>
+      body {
+        padding-top: 60px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" ng-controller="ChatController">
+      <div class="navbar navbar-fixed-top navbar-inverse">
+        <div class="navbar-inner">
+          <div class="pull-right">
+            <a href="https://c9.io" class="brand">1UPHealth</a>
+          </div>
+        </div>
+      </div>
+      <div class="page-header">
+        <h1>1UPHealth Provenance Test Tool</h1>
+      </div>
+      <div id="page" class="row">
+        <div class="form-group">
+          <label for="fhirResource" class="col-lg-4">Fhir Resource</label>
+          <input data-bind="value:url"></input>
+          <div class="col-lg-12">
+            <textarea id="fhirResource" rows="14" cols="150" style="width:1000px" data-bind="value:fhirResource"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="fhirResource2" class="col-lg-4">Consistent Fhir Resource</label>
+          <div class="col-lg-12">
+            <textarea id="fhirResource2" rows="6" cols="150" style="width:1000px" data-bind="value:consistentResource"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="hash" class="col-lg-4">SHA256 Hash</label>
+          <div class="col-lg-12">
+            <label id="hash" data-bind="text:hash"></label>
+          </div>
+        </div>
+        <div class="row">
+          <button data-bind="click:postTx">Send Transaction</button>
+          <button data-bind="click:verify">Verify Resource</button>
+        </div>
+        <div class="form-group">
+          <label for="tx" class="col-lg-4">Transaction Data</label>
+          <div class="col-lg-12">
+            <textarea id="tx" rows="14" cols="150" style="width:1000px" data-bind="value:transaction"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="blocks" class="col-lg-4">Blocks</label>
+          <div class="col-lg-12">
+            <ul id="blocks" class="list-group" data-bind="foreach: blocks">
+              <li class="list-group-item">
+                <pre data-bind="text: ko.toJSON($data, null, 2)"/>
+                <ul data-bind="foreach: trans">
+                  <li class="list-group-item">
+                    <pre data-bind="text: ko.toJSON($data, null, 2)"/>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js"></script>-->
+    <!--<script src="/socket.io/socket.io.js"></script>-->
+
+    <script>
+
+      $(document).ready(function() {
+       require.config({
+          baseUrl : "/js",
+          paths : {
+            "ko" : "https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-debug",
+            "mapping" : "https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping",
+            "consistent": "json_stringify_deterministic"
+          },
+           shim: {
+            },
+       });
+       require(["ko", "consistent"], function(ko, consistent) {
+        console.log("init");
+
+
+        var json = {
+	"resourceType": "Patient",
+	"id": "1",
+	"meta": {
+		"versionId": "1",
+		"lastUpdated": "2017-09-05T20:54:24Z"
+	},
+	"active": true,
+	"name": [{
+			"text": "Eve Everywoman",
+			"family": ["Everywoman1"],
+			"given": ["Eve"]
+		}
+	],
+	"telecom": [{
+			"system": "phone",
+			"value": "555-555-2003",
+			"use": "work"
+		}
+	],
+	"gender": "female",
+	"birthDate": "1955-01-06",
+	"address": [{
+			"use": "home",
+			"line": ["2222 Home Street"]
+		}
+	]
+}
+;
+        var formatted = JSON.stringify(json, null, 2);
+        var viewModel = {
+          fhirResource : ko.observable(formatted),
+          url : ko.observable("http://testorg.org/r3/Patient/100/_history/1")
+        };
+
+        viewModel.consistentResource = ko.computed(function() {
+            var json = JSON.parse(viewModel.fhirResource());
+            var con = consistent(json, null, 2);
+            console.log(con);
+            return con;
+        });
+
+        viewModel.transaction = ko.observable("");
+        viewModel.blocks = ko.observableArray([]);
+
+        viewModel.getBlocks = function () {
+            viewModel.blocks.removeAll();
+            $.when($.ajax("/nrOfBlocks", {
+                contentType: 'application/json',
+                accept: 'application/json',
+                accept: 'application/json',
+                type: 'GET'
+            })).then(function (result) {
+                console.log(JSON.stringify(result));
+                for (var i = result.nrOfBlocks; i > 0; i--) {
+                    $.when($.ajax("/block/" + i, {
+                        contentType: 'application/json',
+                        accept: 'application/json',
+                        accept: 'application/json',
+                        type: 'GET'
+                    })).then(function (result) {
+                        result.trans = ko.observableArray([]);
+                        viewModel.blocks.push(result);
+
+                        result.transactions.forEach(function(tx) {
+                            $.when($.ajax("/transaction/" + tx, {
+                              contentType: 'application/json',
+                              accept: 'application/json',
+                              accept: 'application/json',
+                              type: 'GET'
+                            })).then(function (res2) {
+                              console.log("Transaction : " + JSON.stringify(res2));
+                              res2.translated =
+                              result.trans.push(res2);
+                            });
+                          });
+                    });
+
+                }
+            });
+        }
+
+        viewModel.getBlocks();
+
+        viewModel.hash = ko.computed(function() {
+            var md = forge.md.sha256.create();
+            md.update(viewModel.consistentResource());
+            console.log("hash : " + md.digest().toHex());
+            return md.digest().toHex();
+        });
+
+        viewModel.postTx = function() {
+           var data = JSON.stringify({ url : viewModel.url(), hash : viewModel.hash()});
+           console.log(data);
+           $.when($.ajax("/tx", {
+                    data: data,
+                    contentType: 'application/json',
+                    processData: false,
+                    type: 'POST'
+                })).then(function(result) {
+                  console.log(result);
+                  viewModel.transaction(JSON.stringify(result, null, 2));
+                  viewModel.getBlocks();
+                });
+        }
+
+        viewModel.verify = function() {
+           var data = JSON.stringify({ url : viewModel.url(), hash : viewModel.hash()});
+           $.when($.ajax("/verify", {
+                    data: data,
+                    contentType: 'application/json',
+                    processData: false,
+                    type: 'POST'
+                })).then(function(result) {
+                  console.log(result);
+                  viewModel.transaction(JSON.stringify(result, null, 2));
+                });
+        }
+
+        ko.applyBindings(viewModel, document.getElementById("page"));
+        });
+        });
+
+    </script>
+
+  </body>
+</html>
