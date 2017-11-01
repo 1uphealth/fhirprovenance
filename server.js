@@ -15,14 +15,14 @@ var Web3 = require('web3');
 var web3 = new Web3();
 
 const InputDataDecoder = require('ethereum-input-data-decoder');
-var abi = JSON.parse(fs.readFileSync('build/contracts/FhirSignatures.json'));
+var abi = JSON.parse(fs.readFileSync('build/contracts/FhirHashes.json'));
 const decoder = new InputDataDecoder(abi.abi);
 
 var provider = new web3.providers.HttpProvider();
 web3.setProvider(provider);
 
 var contract = require('truffle-contract');
-var fhir_artifacts = require('./build/contracts/FhirSignatures.json');
+var fhir_artifacts = require('./build/contracts/FhirHashes.json');
 var fhir = contract(fhir_artifacts);
 fhir.setProvider(provider);
 

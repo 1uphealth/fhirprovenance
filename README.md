@@ -8,3 +8,8 @@ npm install -g ethereumjs-testrpc
 ./startup.sh
 truffle compile
 ```
+
+# Start the server
+```
+npm start
+```
