@@ -6,4 +6,5 @@ npm install
 npm install -g truffle
 npm install -g ethereumjs-testrpc
 ./startup.sh
+truffle compile
 ```
