@@ -1,8 +1,3 @@
-//
-// # SimpleServer
-//
-// A simple chat server using Socket.IO, Express, and Async.
-//
 var http = require('http');
 var path = require('path');
 
@@ -66,12 +61,13 @@ router.post('/tx', function (req, res) {
 
     fhir.deployed().then(function(instance) {
         console.log("deployed");
-            instance.storeSignature(req.body.url, req.body.hash, {from: address, gas: 100000000}).then(function(tx) {
-                console.log("store");
-                console.dir(tx);
-                console.dir(res);
-                res.send(tx);
-            });
+        console.log(instance);
+        instance.storeHash(req.body.url, req.body.hash, {from: address, gas: 100000000}).then(function(tx) {
+            console.log("store");
+            console.dir(tx);
+            console.dir(res);
+            res.send(tx);
+        });
 
 });
 });
@@ -84,7 +80,7 @@ router.post('/verify', function (req, res) {
     fhir.deployed().then(function(instance) {
         console.log("deployed");
         // console.dir(instance);
-        instance.checkSignature.call(req.body.url, req.body.hash).then(function(result) {
+        instance.checkHash.call(req.body.url, req.body.hash).then(function(result) {
             console.log("ispresent " + result);
             res.send({ result : result});
         });
@@ -191,5 +187,5 @@ function broadcast(event, data) {
 
 server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function(){
   var addr = server.address();
-  console.log("Chat server listening at", addr.address + ":" + addr.port);
+  console.log("1upHealth provenance server listening at", addr.address + ":" + addr.port);
 });
