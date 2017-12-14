@@ -101,34 +101,34 @@
 
 
         var json = {
-	"resourceType": "Patient",
-	"id": "1",
-	"meta": {
-		"versionId": "1",
-		"lastUpdated": "2017-09-05T20:54:24Z"
-	},
-	"active": true,
-	"name": [{
-			"text": "Eve Everywoman",
-			"family": ["Everywoman1"],
-			"given": ["Eve"]
-		}
-	],
-	"telecom": [{
-			"system": "phone",
-			"value": "555-555-2003",
-			"use": "work"
-		}
-	],
-	"gender": "female",
-	"birthDate": "1955-01-06",
-	"address": [{
-			"use": "home",
-			"line": ["2222 Home Street"]
-		}
-	]
-}
-;
+        	"resourceType": "Patient",
+        	"id": "1",
+        	"meta": {
+        		"versionId": "1",
+        		"lastUpdated": "2017-09-05T20:54:24Z"
+        	},
+        	"active": true,
+        	"name": [{
+        			"text": "Eve Everywomen",
+        			"family": ["Everywoman1"],
+        			"given": ["Eve"]
+        		}
+        	],
+        	"telecom": [{
+        			"system": "phone",
+        			"value": "555-555-2003",
+        			"use": "work"
+        		}
+        	],
+        	"gender": "female",
+        	"birthDate": "1955-01-06",
+        	"address": [{
+        			"use": "home",
+        			"line": ["2222 Home Street"]
+        		}
+        	]
+        }
+        ;
         var formatted = JSON.stringify(json, null, 2);
         var viewModel = {
           fhirResource : ko.observable(formatted),
