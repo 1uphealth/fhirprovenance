@@ -16,6 +16,11 @@ In different terminal window, compile truffle and start the server
 truffle compile --network development
 npm start
 ```
+## restart after changes
+```
+rm ./build/contracts/* && truffle compile -e development --network development && truffle migrate reset --network development --compile-all && npm start
+```
+
 
 # Production
 ```
