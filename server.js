@@ -28,7 +28,7 @@ fhir.currentProvider.sendAsync = function () {
 var address = '0xaeab34f5ad9479a9fe221672780ed09d29802651';
 //var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 web3.eth.getAccounts().then(function(a) {
-   address = a[1];
+   address = a[0];
    console.log("address " + address);
    web3.eth.defaultAccount = address;
    console.log(web3.utils.isAddress(address));
