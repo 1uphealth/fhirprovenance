@@ -24,5 +24,5 @@ rm ./build/contracts/* && truffle compile -e development --network development &
 
 # Production
 ```
-truffle compile -e production
+rm ./build/contracts/* && truffle compile -e production --network production && truffle migrate reset --network production --compile-all && npm start
 ```

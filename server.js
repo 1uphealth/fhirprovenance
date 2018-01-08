@@ -1,14 +1,17 @@
 var http = require('http');
 var path = require('path');
+var crypto = require('crypto');
 
 
 var async = require('async');
+var amdloader = require("amd-loader");
 var fs = require('fs');
 var socketio = require('socket.io');
 var express = require('express');
 var Web3 = require('web3');
 var web3 = new Web3();
 
+var json_stringify_deterministic = require('./client/js/json_stringify_deterministic');
 const InputDataDecoder = require('ethereum-input-data-decoder');
 var abi = JSON.parse(fs.readFileSync('build/contracts/FhirHashes.json'));
 const decoder = new InputDataDecoder(abi.abi);
@@ -28,7 +31,7 @@ fhir.currentProvider.sendAsync = function () {
 var address = '0xaeab34f5ad9479a9fe221672780ed09d29802651';
 //var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 web3.eth.getAccounts().then(function(a) {
-   address = a[1];
+   address = a[0];
    console.log("address " + address);
    web3.eth.defaultAccount = address;
    console.log(web3.utils.isAddress(address));
@@ -55,6 +58,14 @@ var io = socketio.listen(server);
 
 router.use(express.static(path.resolve(__dirname, 'client')));
 
+router.post('/hash', function (req, res) {
+  console.log(' Body : ' + JSON.stringify(req.body));
+  var fhirResource = req.body
+  var con = json_stringify_deterministic(fhirResource, null, 2);
+  var hash = crypto.createHash('sha256').update(con).digest('hex');
+  res.send({hash: hash})
+});
+
 router.post('/tx', function (req, res) {
 
     console.log(' Body : ' + JSON.stringify(req.body));
@@ -69,9 +80,8 @@ router.post('/tx', function (req, res) {
             res.send(tx);
         });
 
+    });
 });
-});
-
 
 router.post('/verify', function (req, res) {
 

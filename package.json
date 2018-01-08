@@ -6,6 +6,7 @@
   "repository": "",
   "author": "Vanessa Fens",
   "dependencies": {
+    "amd-loader": "0.0.8",
     "async": "~0.2.8",
     "express": "~3.2.4",
     "json-stringify-deterministic": "^1.0.1",
