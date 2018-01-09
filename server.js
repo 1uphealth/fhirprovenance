@@ -73,7 +73,7 @@ router.post('/tx', function (req, res) {
     fhir.deployed().then(function(instance) {
         console.log("deployed");
         console.log(req.body.url, req.body.hash)
-        instance.storeHash(req.body.url, req.body.hash, {from: address, gas: 100000000}).then(function(tx) {
+        instance.storeHash(req.body.url, req.body.hash, {from: address, gas: 1000000}).then(function(tx) {
             console.log("store");
             console.dir(tx);
             // console.dir(res);
